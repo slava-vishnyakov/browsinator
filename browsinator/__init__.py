@@ -13,7 +13,7 @@ import websocket
 __version__ = "0.1.1"
 
 class Browser:
-    def __init__(self):
+    def __init__(self, debug_port=9222):
         self.raise_exc = None
         self.c = requests.Session()
         self.uid = 0
@@ -22,13 +22,26 @@ class Browser:
         self.requests = {}
         self.debug_params = {}
         self.match_network_url_parts = []
-        self.base_uri = 'http://localhost:9222'
+        self.base_uri = f'http://localhost:{debug_port}'
         self.tab = None
         self.ws = None
         self.t = None
+        self.connect()
 
     @staticmethod
-    def start(path=None, minimized=True, debug_port=9222, timeout=30):
+    def start_brave(*args, **kwargs):
+        if platform.system() == "Darwin":
+            path = "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
+        elif platform.system() == "Linux":
+            path = "brave"
+        elif platform.system() == "Windows":
+            path = r"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe"
+        else:
+            raise OSError("Unsupported operating system")
+        return Browser.start(path, *args, **kwargs)
+
+    @staticmethod
+    def start(path=None, minimized=True, debug_port=9222, timeout=30, user_data_dir=None):
         if path is None:
             if platform.system() == "Darwin":
                 path = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
@@ -43,20 +56,23 @@ class Browser:
             path,
             f"--remote-debugging-port={debug_port}",
             "--remote-allow-origins=*",
-            "--user-data-dir=/tmp/chrome_debug_profile",
-            "--no-first-run",
-            "--no-default-browser-check",
         ]
+
+        if user_data_dir is not None:
+            cmd.append(f"--user-data-dir={user_data_dir}")
 
         if minimized:
             cmd.append("--start-minimized")
+
+        print(cmd)
 
         process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         
         start_time = time.time()
         while time.time() - start_time < timeout:
             try:
-                requests.get(f"http://localhost:{debug_port}")
+                print(requests.get(f"http://localhost:{debug_port}/json/version").json())
+                print('Port is reachable, Chrome has started successfully')
                 return  # Port is reachable, Chrome has started successfully
             except requests.ConnectionError:
                 time.sleep(0.1)
@@ -81,6 +97,7 @@ class Browser:
         while not self.ws.sock or not self.ws.sock.connected:
             time.sleep(0.1)
         self.run_method_cb('Page.enable')
+        print('Browser started {self.ws.sock}')
         atexit.register(self.close)
 
     def close(self):

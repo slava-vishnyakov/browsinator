@@ -17,28 +17,9 @@ Here's a basic example of how to use Browsinator:
 
 ```python
 from browsinator import Browser
-
-# Start Chrome (you can optionally specify the path to Chrome executable)
-Browser.start()
-
-# Connect to the browser
+Browser.start() # Start Chrome or ...
+Browser.start_brave() # Start Brave
 browser = Browser()
-browser.connect()
-```
-
-You can also customize the Chrome startup:
-
-```python
-# Start Chrome with custom options
-Browser.start(
-    path="/path/to/chrome",  # Custom Chrome executable path
-    minimized=False,         # Start Chrome in normal window (not minimized)
-    debug_port=9223          # Use a custom debugging port
-)
-
-# Connect to the browser
-browser = Browser()
-browser.connect()
 ```
 
 #### Navigate to a URL
@@ -69,3 +50,19 @@ browser.mouse_click_selector("#submit-button")
 ```python
 browser.close()
 ```
+
+## Custom Chrome startup
+
+You can also customize the Chrome startup:
+
+```python
+# Start Chrome with custom options
+Browser.start(
+    path="/path/to/chrome",  # Custom Chrome executable path
+    minimized=False,         # Start Chrome in normal window (not minimized)
+    debug_port=9223          # Use a custom debugging port
+)
+browser = Browser(debug_port=9222)
+
+```
+
