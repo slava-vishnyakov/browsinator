@@ -49,10 +49,7 @@ class Browser:
         ]
 
         if minimized:
-            if platform.system() == "Windows":
-                cmd.append("--start-minimized")
-            else:
-                cmd.append("--headless")
+            cmd.append("--start-minimized")
 
         subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         time.sleep(1)  # Wait for Chrome to start
