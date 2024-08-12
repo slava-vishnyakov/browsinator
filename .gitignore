@@ -8,3 +8,5 @@ build/
 .eggs/
 .venv/
 venv/
+.env
+.idea
