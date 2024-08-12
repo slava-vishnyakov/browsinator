@@ -15,27 +15,30 @@ pip install browsinator
 
 Here's a basic example of how to use Browsinator:
 
-Start Chrome with the following command:
+```python
+from browsinator import Browser
 
-### MacOS
-```bash
-open -a "Google Chrome" --args --start-minimized --remote-allow-origins=http://localhost:9222 --user-data-dir=/tmp/dir1 --disable-gpu --remote-debugging-port=9222
+# Start Chrome (you can optionally specify the path to Chrome executable)
+Browser.start()
+
+# Connect to the browser
+browser = Browser()
+browser.connect()
 ```
 
-### Linux
-```bash
-google-chrome --start-minimized --remote-allow-origins=http://localhost:9222 --user-data-dir=/tmp/dir1 --disable-gpu --remote-debugging-port=9222
-```
-
-### Windows
-```bash
-start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --start-minimized --remote-allow-origins=http://localhost:9222 --user-data-dir=/tmp/dir1 --disable-gpu --remote-debugging-port=9222
-```
-
-Then you can use Browsinator to control the browser:
+You can also customize the Chrome startup:
 
 ```python
+# Start Chrome with custom options
+Browser.start(
+    path="/path/to/chrome",  # Custom Chrome executable path
+    minimized=False,         # Start Chrome in normal window (not minimized)
+    debug_port=9223          # Use a custom debugging port
+)
+
+# Connect to the browser
 browser = Browser()
+browser.connect()
 ```
 
 #### Navigate to a URL

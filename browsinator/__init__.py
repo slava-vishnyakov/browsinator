@@ -1,18 +1,16 @@
-CMD = ''' 
-open -a "Google Chrome" --args --start-minimized --remote-allow-origins=http://localhost:9222 --user-data-dir=/tmp/dir1 --disable-gpu --remote-debugging-port=9222
-'''
-
-__version__ = "0.1.1"
-
 import atexit
 import base64
 import json
+import os
+import platform
+import subprocess
 import time
 from threading import Thread
 
-import requests as requests
+import requests
 import websocket
 
+__version__ = "0.1.1"
 
 class Browser:
     def __init__(self):
@@ -25,17 +23,52 @@ class Browser:
         self.debug_params = {}
         self.match_network_url_parts = []
         self.base_uri = 'http://localhost:9222'
+        self.tab = None
+        self.ws = None
+        self.t = None
+
+    @staticmethod
+    def start(path=None, minimized=True, debug_port=9222):
+        if path is None:
+            if platform.system() == "Darwin":
+                path = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+            elif platform.system() == "Linux":
+                path = "google-chrome"
+            elif platform.system() == "Windows":
+                path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+            else:
+                raise OSError("Unsupported operating system")
+
+        cmd = [
+            path,
+            f"--remote-debugging-port={debug_port}",
+            "--remote-allow-origins=*",
+            "--user-data-dir=/tmp/chrome_debug_profile",
+            "--no-first-run",
+            "--no-default-browser-check",
+        ]
+
+        if minimized:
+            if platform.system() == "Windows":
+                cmd.append("--start-minimized")
+            else:
+                cmd.append("--headless")
+
+        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        time.sleep(1)  # Wait for Chrome to start
+
+    def connect(self):
         res = self.c.put(self.base_uri + '/json/new')
         self.tab = res.json()
         url = self.tab['webSocketDebuggerUrl']
-        # print(f'DEBUG: Connecting to websocket at {url}')
+        
         def on_error(ws, error):
             print(f'DEBUG: Websocket error: {error}')
+        
         self.ws = websocket.WebSocketApp(url, on_message=self.on_message, on_error=on_error)
         self.t = Thread(target=self._start, daemon=True)
         self.t.start()
         while not self.ws.sock or not self.ws.sock.connected:
-            # print(f'Waiting for websocket to connect... {self.ws.sock}')
             time.sleep(0.1)
         self.run_method_cb('Page.enable')
         atexit.register(self.close)
