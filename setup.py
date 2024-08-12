@@ -5,13 +5,13 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="browsinator",
-    version="0.1.0",
-    author="Your Name",
-    author_email="your.email@example.com",
+    version="0.1.1",
+    author="Slava Vishnyakov",
+    author_email="bomboze@gmail.com",
     description="A Python library for programmatically controlling and interacting with a web browser using the Chrome DevTools Protocol",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/browsinator",
+    url="https://github.com/slava-vishnyakov/browsinator",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",
