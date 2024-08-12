@@ -28,7 +28,7 @@ class Browser:
         self.t = None
 
     @staticmethod
-    def start(path=None, minimized=True, debug_port=9222):
+    def start(path=None, minimized=True, debug_port=9222, timeout=30):
         if path is None:
             if platform.system() == "Darwin":
                 path = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
@@ -51,8 +51,21 @@ class Browser:
         if minimized:
             cmd.append("--start-minimized")
 
-        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        time.sleep(1)  # Wait for Chrome to start
+        process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            try:
+                requests.get(f"http://localhost:{debug_port}")
+                return  # Port is reachable, Chrome has started successfully
+            except requests.ConnectionError:
+                time.sleep(0.1)
+                if process.poll() is not None:
+                    raise RuntimeError("Chrome process terminated unexpectedly")
+
+        # If we've reached here, the timeout has occurred
+        process.terminate()
+        raise TimeoutError(f"Chrome didn't start within {timeout} seconds")
 
     def connect(self):
         res = self.c.put(self.base_uri + '/json/new')
