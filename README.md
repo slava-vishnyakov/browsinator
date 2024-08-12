@@ -28,8 +28,9 @@ browser.load("https://example.com", wait=True)
 ```
 
 #### Run JavaScript
+
 ```python
-result = browser.run_script_sync_get_result("document.title")
+result = browser.run_script("document.title")
 print(f"Page title: {result}")
 ```
 
@@ -37,6 +38,15 @@ print(f"Page title: {result}")
 ```python
 browser.match_network("api/data", lambda req, res, data: print(f"API data: {data}"))
 browser.monitor_network()
+```
+
+#### Run raw debug methods
+
+For example calling [Network.getResponseBody](https://chromedevtools.github.io/devtools-protocol/tot/Network/) with a specific request ID:
+
+```python
+result = browser.send_command("Network.getResponseBody", {"requestId": 1})
+print(f"Response body: {result}")
 ```
 
 #### Simulate user input

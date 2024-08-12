@@ -189,17 +189,17 @@ class Browser:
     def add_callback(self, method, cb):
         self.callbacks[method] = cb
 
-    def run_script(self, script, cb=None):
+    def run_script_no_return(self, script, cb=None):
         self.run_method_cb('Runtime.evaluate', {'expression': script}, cb)
 
-    def run_script_sync_get_result(self, script):
+    def run_script(self, script):
         script2 = f'JSON.stringify({script})'
-        results = self.run_method_sync('Runtime.evaluate', {'expression': script2})
+        results = self.send_command('Runtime.evaluate', {'expression': script2})
         if 'exceptionDetails' in results:
             raise Exception(results['exceptionDetails'])
         return json.loads(results['result']['value'])
 
-    def run_method_sync(self, method, params=None):
+    def send_command(self, method, params=None):
         if params is None:
             params = {}
         results = {}
@@ -211,7 +211,7 @@ class Browser:
         return results['result']
 
     def monitor_network(self):
-        self.run_method_sync('Network.enable')
+        self.send_command('Network.enable')
 
     def match_network(self, url_part, cb):
         self.match_network_url_parts.append((url_part, cb))
@@ -237,18 +237,18 @@ class Browser:
             self.run_method_cb('Input.dispatchKeyEvent', {'type': 'char', 'text': c})
 
     def keyboard_press_enter(self):
-        self.run_method_sync('Input.dispatchKeyEvent', {'type': 'char', 'windowsVirtualKeyCode': 13})
+        self.send_command('Input.dispatchKeyEvent', {'type': 'char', 'windowsVirtualKeyCode': 13})
 
     def keyboard_paste(self):
         # import pyperclip
         # pyperclip.copy('Hello, World!')
-        self.run_method_sync('Input.dispatchKeyEvent', {'type': 'char', 'commands': ['Paste']})
+        self.send_command('Input.dispatchKeyEvent', {'type': 'char', 'commands': ['Paste']})
 
     def keyboard_undo(self):
-        self.run_method_sync('Input.dispatchKeyEvent', {'type': 'char', 'commands': ['Undo']})
+        self.send_command('Input.dispatchKeyEvent', {'type': 'char', 'commands': ['Undo']})
 
     def mouse_click_selector(self, selector, dx=1, dy=1):
-        coords = self.run_script_sync_get_result(f"document.querySelector({json.dumps(selector)}).getBoundingClientRect()")
-        self.run_method_sync('Input.dispatchMouseEvent', {'type': 'mousePressed', 'x': coords['x']+dx, 'y': coords['y']+dy, 'button': 'left'})
-        self.run_method_sync('Input.dispatchMouseEvent', {'type': 'mouseReleased', 'x': coords['x']+dx, 'y': coords['y']+dy, 'button': 'left'})
+        coords = self.run_script(f"document.querySelector({json.dumps(selector)}).getBoundingClientRect()")
+        self.send_command('Input.dispatchMouseEvent', {'type': 'mousePressed', 'x': coords['x'] + dx, 'y': coords['y'] + dy, 'button': 'left'})
+        self.send_command('Input.dispatchMouseEvent', {'type': 'mouseReleased', 'x': coords['x'] + dx, 'y': coords['y'] + dy, 'button': 'left'})
 
