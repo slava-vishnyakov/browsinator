@@ -1,6 +1,8 @@
-cmd = ''' 
+CMD = ''' 
 open -a "Google Chrome" --args --start-minimized --remote-allow-origins=http://localhost:9222 --user-data-dir=/tmp/dir1 --disable-gpu --remote-debugging-port=9222
 '''
+
+__version__ = "0.1.0"
 
 import atexit
 import base64

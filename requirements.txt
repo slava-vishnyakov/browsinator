@@ -1,2 +1,5 @@
-requests
-websocket-client
+requests>=2.25.1
+websocket-client>=1.0.1
+twine>=3.4.1
+build>=0.3.1
+bump2version>=1.0.1
